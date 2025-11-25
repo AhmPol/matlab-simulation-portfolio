@@ -1,5 +1,7 @@
 # Spring-Mass-Damper Simulation
 
+![Spring Animation](spring_animation.gif)
+
 ## Purpose
 This MATLAB project simulates the dynamics of a spring-mass-damper system, visualizing both displacement and velocity over time, as well as animating the oscillatory motion of the mass. It demonstrates fundamental mechanical system modeling and numerical solution of differential equations.
 
