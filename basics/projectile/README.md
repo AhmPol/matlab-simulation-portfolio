@@ -1,5 +1,7 @@
 # Projectile Motion Simulation
 
+![Projectile Animation](projectile_animation.gif)
+
 ## Purpose
 This MATLAB project simulates the trajectories of multiple projectiles launched at different angles with the same initial velocity. It demonstrates fundamental physics concepts, trajectory plotting, and dynamic visualization in MATLAB.
 
