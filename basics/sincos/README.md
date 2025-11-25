@@ -1,5 +1,7 @@
 # Sine and Cosine Waves Simulation
 
+![Spring Plot](sincos.png)
+
 ## Purpose
 This MATLAB project demonstrates the generation and visualization of sine and cosine functions with varying frequencies, helping to understand wave behavior and trigonometric concepts.
 
