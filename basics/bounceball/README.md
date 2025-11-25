@@ -1,5 +1,7 @@
 # Bounce Ball Simulation
 
+![Bounce Ball Animation](bounceball_animation.gif)
+
 ## Purpose
 This MATLAB project simulates the motion of two bouncing balls with different restitution coefficients and a start delay for the second ball. It demonstrates basic mechanics, energy loss modeling, and dynamic visualization in MATLAB.
 
