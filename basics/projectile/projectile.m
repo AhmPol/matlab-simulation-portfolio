@@ -1,76 +1,93 @@
-% Parameters
-v0 = [25; 25; 25; 25; 25];
-theta = [15; 30; 45; 60; 75];
-g = 9.8;
-dt = 0.05;
-y = [0; 0; 0; 0; 0];
-x = [0; 0; 0; 0; 0];
+%% Projectile Motion Simulation with GIF Export
+clear; clc; close all;
 
-% Convert angles into radian
+%% Parameters
+v0 = [25; 25; 25; 25; 25];          % Initial velocities (m/s)
+theta = [15; 30; 45; 60; 75];       % Launch angles (degrees)
+g = 9.8;                             % Gravity (m/s^2)
+dt = 0.05;                           % Time step (s)
+numProj = length(v0);
+
+% Convert angles to radians
 theta_rad = deg2rad(theta);
 
-% Initial Velocity
+% Initial velocity components
 vx = v0 .* cos(theta_rad);
 vy = v0 .* sin(theta_rad);
 
-% Array to store trajectory
+% Initialize positions
+x = zeros(numProj,1);
+y = zeros(numProj,1);
+y0 = y;
+
+% Store trajectories
 X = x;
 Y = y;
 
-%Time loop
-t = 0;
-y0 = y;
+%% Create Figures folder if it doesn't exist
+if ~exist('Figures', 'dir')
+    mkdir('Figures');
+end
+gifFile = fullfile('Figures','projectile_animation.gif');
 
-% Set Up Figure
-figure 
-proj1 = plot(0, x(1), 'o', 'MarkerSize', 10, 'MarkerFaceColor', 'b');
-hold on 
-proj2 = plot(0, x(2), 'o', 'MarkerSize', 10, 'MarkerFaceColor', 'r');
-trail1 = plot(X(1,:), Y(1,:), 'b', 'LineWidth', 1.5); % line for trajectory
-trail2 = plot(X(2,:), Y(2,:), 'r', 'LineWidth', 1.5); % line for trajectory
-proj3 = plot(0, x(3), 'o', 'MarkerSize', 10, 'MarkerFaceColor', 'g');
-trail3 = plot(X(3,:), Y(3,:), 'g', 'LineWidth', 1.5); % line for trajectory
-proj4 = plot(0, x(4), 'o', 'MarkerSize', 10, 'MarkerFaceColor', 'y');
-trail4 = plot(X(4,:), Y(4,:), 'y', 'LineWidth', 1.5); % line for trajectory
-proj5 = plot(0, x(5), 'o', 'MarkerSize', 10, 'MarkerFaceColor', 'm');
-trail5 = plot(X(5,:), Y(5,:), 'm', 'LineWidth', 1.5); % line for trajectory
-xlim ([0, 2*max(v0.^2 .* sin(2*max(theta_rad))/g) + 5])
-ylim ([0, max(y0 + (v0.^2 .* (sin(max(theta_rad)).^2)) / (2*g)) + 10])
-xlabel ('x (m)')
-ylabel ('y(m)')
-title ('Project Motion')
+%% Set up figure and plots
+figure;
+colors = {'b','r','g','y','m'};
+projPlots = gobjects(numProj,1);
+trailPlots = gobjects(numProj,1);
+
+hold on
+for i = 1:numProj
+    projPlots(i) = plot(0, y(i), 'o', 'MarkerSize',10, 'MarkerFaceColor', colors{i});
+    trailPlots(i) = plot(X(i,:), Y(i,:), colors{i}, 'LineWidth',1.5);
+end
+hold off
+
+xlim([0, 2*max(v0.^2 .* sin(2*max(theta_rad))/g) + 5])
+ylim([0, max((v0.^2 .* (sin(max(theta_rad)).^2)) / (2*g)) + 10])
+xlabel('x (m)')
+ylabel('y (m)')
+title('Projectile Motion')
 grid on
 
+%% Animation loop
+t = 0;
 while true
     t = t + dt;
     
-    for i = 1:5
-        % Update positions
-        x(i) = vx(i) * t;
+    % Update positions for each projectile
+    for i = 1:numProj
         ytemp = y0(i) + vy(i)*t - 0.5*g*t^2;
-        y(i) = max(ytemp, 0);
+        y(i) = max(ytemp, 0);          % Ball cannot go below ground
+        x(i) = vx(i) * t;
     end
-
+    
     % Store trajectory
     X(:, end+1) = x;
     Y(:, end+1) = y;
-
-    %Update plots
-    set(proj1, 'XData', x(1), 'YData', y(1))
-    set(proj2, 'XData', x(2), 'YData', y(2))
-    set(proj3, 'XData', x(3), 'YData', y(3))
-    set(proj4, 'XData', x(4), 'YData', y(4))
-    set(proj5, 'XData', x(5), 'YData', y(5))
-    set(trail1, 'XData', X(1,:), 'YData', Y(1,:))
-    set(trail2, 'XData', X(2,:), 'YData', Y(2,:))
-    set(trail3, 'XData', X(3,:), 'YData', Y(3,:))
-    set(trail4, 'XData', X(4,:), 'YData', Y(4,:))
-    set(trail5, 'XData', X(5,:), 'YData', Y(5,:))
-
-    drawnow
     
-    % Break only after both projectiles are at ground
-    if all(y == 0) && t > 0
+    % Update plots
+    for i = 1:numProj
+        set(projPlots(i), 'XData', x(i), 'YData', y(i));
+        set(trailPlots(i), 'XData', X(i,:), 'YData', Y(i,:));
+    end
+    
+    drawnow;
+    
+    % Capture frame for GIF
+    frame = getframe(gcf);
+    im = frame2im(frame);
+    [A,map] = rgb2ind(im,256);
+    if t==dt
+        imwrite(A,map,gifFile,'gif','LoopCount',Inf,'DelayTime',dt);
+    else
+        imwrite(A,map,gifFile,'gif','WriteMode','append','DelayTime',dt);
+    end
+    
+    % Stop when all projectiles have hit the ground
+    if all(y==0) && t>0
         break
     end
 end
+
+disp(['Animation GIF saved at: ', gifFile]);
