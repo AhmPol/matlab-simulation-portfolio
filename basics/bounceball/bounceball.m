@@ -1,42 +1,71 @@
-% Parameters
-t = 0;              % time
+%% Bouncing Balls Simulation with GIF Export
+clear; clc; close all;
 
-% Balls setup (columns = balls)
-y = [30; 30];         % heights
-v = [0; 0];        % velocities
-g = [9.8; 9.8];
-dt = [0.05; 0.05];
-r = [0.5; 0.6];
-delay = [0; 0];     % start delay for each ball (ball 2 starts at t=1s)
+%% Parameters
+numBalls = 2;
+t = 0;
+tMax = 10;
+dt = 0.05;
 
-% Plot setup
-figure
-balls(1) = plot(-1, y(1), 'o', 'MarkerSize', 20, 'MarkerFaceColor', 'b');
+y = [30; 30];          % Initial heights
+v = [0; 0];            % Initial velocities
+g = 9.8;               % Gravity
+r = [0.5; 0.6];        % Coefficient of restitution
+delay = [0; 1];        % Start delay for each ball (seconds)
+xPos = [-1, 1];        % X positions for plotting
+
+%% Create Figures folder if it doesn't exist
+if ~exist('Figures', 'dir')
+    mkdir('Figures');
+end
+gifFile = fullfile('Figures','bounceball_animation.gif');
+
+%% Set up figure
+figure;
+balls = gobjects(numBalls,1);
+colors = {'b','r'};
 hold on
-balls(2) = plot( 1, y(2), 'o', 'MarkerSize', 20, 'MarkerFaceColor', 'r');
+for i = 1:numBalls
+    balls(i) = plot(xPos(i), y(i), 'o', 'MarkerSize', 20, 'MarkerFaceColor', colors{i});
+end
 hold off
-xlim([-2 2])
-ylim([0 h+15])
-xlabel('x')
-ylabel('height')
-title('Bouncing Balls with Delay')
+xlim([-2 2]);
+ylim([0 max(y)+15]);
+xlabel('x');
+ylabel('Height (m)');
+title('Bouncing Balls with Delay');
 grid on
 
-% Simulation loop
-while t < 10
-    for i = 1:2
-        if t > delay(i)   % only update after its delay
-            v(i) = v(i) - g(i)*dt(i);
-            y(i) = y(i) + v(i)*dt(i);
+%% Animation loop with GIF export
+while t < tMax
+    for i = 1:numBalls
+        if t >= delay(i)
+            % Update velocity and position
+            v(i) = v(i) - g*dt;
+            y(i) = y(i) + v(i)*dt;
 
+            % Bounce
             if y(i) <= 0
                 y(i) = 0;
                 v(i) = -v(i)*r(i);
             end
         end
-        set(balls(i), 'YData', y(i))  % update plot
+        set(balls(i), 'YData', y(i)); % Update plot
     end
-    
+
+    drawnow;
+
+    % Capture frame for GIF
+    frame = getframe(gcf);
+    im = frame2im(frame);
+    [A,map] = rgb2ind(im,256);
+    if t == 0
+        imwrite(A,map,gifFile,'gif','LoopCount',Inf,'DelayTime',dt);
+    else
+        imwrite(A,map,gifFile,'gif','WriteMode','append','DelayTime',dt);
+    end
+
     t = t + dt;
-    drawnow
 end
+
+disp(['Animation GIF saved at: ', gifFile]);
